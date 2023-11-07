@@ -4,7 +4,7 @@ function keepAsking () {
     let answer = "";
     do {
         answer = prompt("¿Desea seguir agregando productos? Ingrese 'si' o 'no':");
-        answer = answer ? answer.trim().toLowerCase() : ""; // Convierte a minúsculas y elimina espacios en blanco
+        answer = answer != null ? answer.trim().toLowerCase() : ""; // Convierte a minúsculas y elimina espacios en blanco
 
         if (answer !== "si" && answer !== "no") {
             alert("Por favor, ingrese 'si' o 'no'.");
@@ -19,7 +19,7 @@ function addItems() {
 
     while (answer === "si") {
         let addItem = prompt("Agregue un producto a su lista");
-        addItem = addItem ? addItem.trim() : "";
+        addItem = addItem != null ? addItem.trim() : "";
         
         while (addItem === "" || addItem === null) {
             alert("El producto ingresado no es válido, vuelva a intentarlo");

@@ -1,2 +1,2 @@
-# Lista de compras 🛒
-## Entregas para curso de coderhouse-javascript 💻
+# Lista de compras - PreEntrega1-Araya🛒
+## Entregas para curso de coderhouse/javascript 💻
