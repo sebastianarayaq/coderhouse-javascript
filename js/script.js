@@ -64,8 +64,8 @@ function showList() {
         // Agregar información del producto al div
         productDiv.innerHTML = `
             <div class="col text-center text-break"><p>${item.product}</p></div>
-            <div class="col text-center"><p> ${item.quantity}</p></div>
-            <div class="col text-center"><p>$${item.price}</p></div>
+            <div class="col text-center text-break"><p> ${item.quantity}</p></div>
+            <div class="col text-center text-break"><p>$${item.price}</p></div>
         `;
 
         // Agregar el elemento div del producto al contenedor
@@ -95,8 +95,8 @@ function calculateReceipt() {
 
     // Agregar información del producto al div
     receiptDiv.innerHTML = `
-        <div class="col text-center"><p>Total de su compra: $ ${totalValue}</p></div>
-        <div class="col text-center"><p>Cantidad de prodcutos: ${totalProducts}</p></div>
+        <div class="col text-center"><p>Total de su compra:</p>     <p class="text-break">$${totalValue}</p></div>
+        <div class="col text-center"><p>Cantidad de productos:</p>  <p class="text-break">${totalProducts}</p></div>
     `;
 
     // Agregar el elemento div del producto al contenedor
