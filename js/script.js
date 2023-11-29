@@ -17,27 +17,70 @@ function keepAsking () {
 function addItems() {
     let answer = "si"; // Inicializa la respuesta para que el bucle se ejecute al menos una vez
 
-    while (answer === "si") {
-        let addItem = prompt("Agregue un producto a su lista");
-        addItem = addItem != null ? addItem.trim() : "";
-        
-        while (addItem === "" || addItem === null) {
-            alert("El producto ingresado no es válido, vuelva a intentarlo");
-            addItem = prompt("Agregue un producto a su lista");
-            addItem = addItem ? addItem.trim() : "";
+    while (answer.toLowerCase() === "si") {
+        let product = prompt("Ingrese el nombre del producto:");
+        product = product ? product.trim() : "";
+
+        while (product === "") {
+            alert("El nombre del producto no es válido. Por favor, inténtelo de nuevo.");
+            product = prompt("Ingrese el nombre del producto:");
+            product = product ? product.trim() : "";
         }
 
-        list.push(addItem);
+        let quantity = parseInt(prompt("Ingrese la cantidad del producto:"));
+        while (isNaN(quantity) || quantity <= 0) {
+            alert("La cantidad ingresada no es válida. Por favor, ingrese un número mayor que cero.");
+            quantity = parseInt(prompt("Ingrese la cantidad del producto:"));
+        }
+
+        let price = parseFloat(prompt("Ingrese el precio del producto:"));
+        while (isNaN(price) || price <= 0) {
+            alert("El precio ingresado no es válido. Por favor, ingrese un número mayor que cero.");
+            price = parseFloat(prompt("Ingrese el precio del producto:"));
+        }
+
+        // Agregar el objeto a la lista
+        list.push({ product, quantity, price });
+
         answer = keepAsking();
     }
 }
 
 function showList() {
-    console.log("Tu lista es la siguiente:");
+    // Obtener el elemento en el que se mostrará la lista (suponiendo que haya un elemento con el id "shoppingList")
+    const listContainer = document.getElementById("shoppingList");
+
+    // Limpiar el contenido previo
+    listContainer.innerHTML = "";
+
+    // Iterar a través de los productos y crear elementos div para cada uno
     for (let i = 0; i < list.length; i++) {
-        console.log(list[i]);
+        const item = list[i];
+
+        // Crear un elemento div con estilos de Bootstrap para cada producto
+        const productDiv = document.createElement("div");
+        productDiv.classList.add("row", "text-center", "d-flex", "justify-content-between");
+
+        // Agregar información del producto al div
+        productDiv.innerHTML = `
+            <div class="col text-center"><p>${item.product}</p></div>
+            <div class="col text-center"><p> ${item.quantity}</p></div>
+            <div class="col text-center"><p>$${item.price}</p></div>
+        `;
+
+        // Agregar el elemento div del producto al contenedor
+        listContainer.appendChild(productDiv);
     }
+
+    // Agregar el contenedor al elemento de la lista
+    listContainer.appendChild(containerDiv);
 }
 
-addItems();
-showList();
+// Obtener el botón por su ID
+const addItemsBtn = document.getElementById("addItems");
+
+// Agregar un controlador de eventos al botón
+addItemsBtn.addEventListener("click", function() {
+    addItems();
+    showList(); // Luego de agregar items, muestra la lista actualizada
+});
