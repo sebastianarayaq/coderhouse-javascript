@@ -10,14 +10,14 @@
 </head>
 <body>
 
-    <div class="container list">
+    <div class="container list mt-3">
         <div class="row">
-            <div class="d-flex justify-content-between align-items-center w-100">
+            <div class="d-flex justify-content-between align-items-center w-100 p-2">
                 <h1 class="mx-auto">Lista de Compra</h1>
                 <button class="btn btn-success" id="addItems">+</button>
             </div>
         </div>
-        <div class="row">
+        <div class="row mt-3 d-flex flex-no-wrap">
             <div class="col text-center">
                 <p>Producto</p>
             </div>
@@ -25,11 +25,16 @@
                 <p>Cantidad</p>
             </div>
             <div class="col text-center">
-                <p>Precio</p>
+                <p>Precio Unitario</p>
             </div>
         </div>
         <div id="shoppingList"></div>
+        <div class="container mt-2" id="receipt"></div>
     </div>
+
+    
+
+    
 
     <script src="./js/script.js"></script>
 </body>

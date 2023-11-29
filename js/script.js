@@ -33,7 +33,7 @@ function addItems() {
             quantity = parseInt(prompt("Ingrese la cantidad del producto:"));
         }
 
-        let price = parseFloat(prompt("Ingrese el precio del producto:"));
+        let price = parseFloat(prompt("Ingrese el precio unitario del producto:"));
         while (isNaN(price) || price <= 0) {
             alert("El precio ingresado no es válido. Por favor, ingrese un número mayor que cero.");
             price = parseFloat(prompt("Ingrese el precio del producto:"));
@@ -47,7 +47,7 @@ function addItems() {
 }
 
 function showList() {
-    // Obtener el elemento en el que se mostrará la lista (suponiendo que haya un elemento con el id "shoppingList")
+    // Obtener el nodo en el que se mostrará la lista
     const listContainer = document.getElementById("shoppingList");
 
     // Limpiar el contenido previo
@@ -59,11 +59,11 @@ function showList() {
 
         // Crear un elemento div con estilos de Bootstrap para cada producto
         const productDiv = document.createElement("div");
-        productDiv.classList.add("row", "text-center", "d-flex", "justify-content-between");
+        productDiv.classList.add("row", "text-center", "d-flex", "justify-content-between", "flex-no-wrap");
 
         // Agregar información del producto al div
         productDiv.innerHTML = `
-            <div class="col text-center"><p>${item.product}</p></div>
+            <div class="col text-center text-break"><p>${item.product}</p></div>
             <div class="col text-center"><p> ${item.quantity}</p></div>
             <div class="col text-center"><p>$${item.price}</p></div>
         `;
@@ -71,9 +71,36 @@ function showList() {
         // Agregar el elemento div del producto al contenedor
         listContainer.appendChild(productDiv);
     }
+}
 
-    // Agregar el contenedor al elemento de la lista
-    listContainer.appendChild(containerDiv);
+function calculateReceipt() {
+    // Obtener el nodo en el que se mostrará el recibo
+    const receipt = document.getElementById("receipt");
+
+    // Limpiar el contenido previo
+    receipt.innerHTML = "";
+
+    //Variable para almacenar el total de la compra y total de productos
+    let totalValue = 0
+    let totalProducts = 0
+    // Iterar a través de los productos y crear elementos div para cada uno
+    for (let i = 0; i < list.length; i++) {
+        totalValue+=list[i].price*list[i].quantity
+        totalProducts+=list[i].quantity
+    }
+
+    // Crear un elemento div con estilos de Bootstrap para cada producto
+    const receiptDiv = document.createElement("div");
+    receiptDiv.classList.add("row", "text-center", "d-flex", "justify-content-between", "pt-3");
+
+    // Agregar información del producto al div
+    receiptDiv.innerHTML = `
+        <div class="col text-center"><p>Total de su compra: $ ${totalValue}</p></div>
+        <div class="col text-center"><p>Cantidad de prodcutos: ${totalProducts}</p></div>
+    `;
+
+    // Agregar el elemento div del producto al contenedor
+    receipt.appendChild(receiptDiv);
 }
 
 // Obtener el botón por su ID
@@ -82,5 +109,6 @@ const addItemsBtn = document.getElementById("addItems");
 // Agregar un controlador de eventos al botón
 addItemsBtn.addEventListener("click", function() {
     addItems();
-    showList(); // Luego de agregar items, muestra la lista actualizada
+    showList();
+    calculateReceipt(); // Luego de agregar items, muestra la lista actualizada y genera el recibo
 });
