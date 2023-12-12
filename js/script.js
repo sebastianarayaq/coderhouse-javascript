@@ -3,9 +3,11 @@ let list = [];
 loadListFromLocalStorage();
 showList();
 calculateReceipt();
+clearList();
 
 function keepAsking() {
     return new Promise((resolve) => {
+        showList();
         function askUser() {
             Swal.fire({
                 title: "¿Desea seguir agregando productos?",
@@ -64,7 +66,15 @@ function addItems() {
             confirmButtonText: "Aceptar",
             cancelButtonText: "Cancelar",
             inputValidator: (value) => {
-                return isNaN(value) || parseInt(value) <= 0 ? "La cantidad ingresada no es válida. Por favor, ingrese un número mayor que cero." : null;
+                if (!value) {
+                    return "Por favor, ingrese un valor.";
+                }
+                const intValue = parseInt(value);
+                if (isNaN(intValue) || intValue <= 0 || intValue !== parseFloat(value)) {
+                    return "La cantidad ingresada no es un número entero válido. Por favor, ingrese un número entero mayor que cero.";
+                }
+
+                return null;
             },
         });
 
@@ -86,7 +96,15 @@ function addItems() {
             confirmButtonText: "Aceptar",
             cancelButtonText: "Cancelar",
             inputValidator: (value) => {
-                return isNaN(value) || parseFloat(value) <= 0 ? "El precio ingresado no es válido. Por favor, ingrese un número mayor que cero." : null;
+                if (!value) {
+                    return "Por favor, ingrese un valor.";
+                }
+                const intValue = parseInt(value);
+                if (isNaN(intValue) || intValue <= 0 || intValue !== parseFloat(value)) {
+                    return "La cantidad ingresada no es un número entero válido. Por favor, ingrese un número entero mayor que cero.";
+                }
+
+                return null;
             },
         });
 
@@ -103,11 +121,10 @@ function addItems() {
                 showList(); // Mostrar la lista actualizada después de agregar productos
                 calculateReceipt(); // Luego de agregar items, muestra la lista actualizada y genera el recibo
                 saveListToLocalStorage(); // Guarda la lista en localStorage al final de la operación
+                clearList();
             }
         }
     }
-
-    
     askProductName(); // Comenzar el proceso preguntando por el nombre del producto
 }
 
@@ -135,6 +152,27 @@ function showList() {
 
         // Agregar el elemento div del producto al contenedor
         listContainer.appendChild(productDiv);
+    }
+}
+
+function clearList() {
+    if (list.length > 0) {
+        const clearButton = document.createElement('button');
+        clearButton.textContent = 'Limpiar carro';
+        clearButton.classList.add('btn', 'btn-danger');
+
+        // Agrega el botón al contenedor
+        const container = document.querySelector('.row.text-center.d-flex.justify-content-between.pt-3');
+        container.appendChild(clearButton);
+
+        // Evento de click para limpiar la lista
+        clearButton.addEventListener('click', function () {
+            list = [];
+            showList(); // Actualizar la interfaz después de limpiar la lista
+            saveListToLocalStorage(); // Guardar la lista actualizada en localStorage
+            calculateReceipt(); // Calcula nuevamente el recibo para actualizar la info
+            container.removeChild(clearButton); // Elimina el botón después de hacer click
+        });
     }
 }
 
@@ -190,5 +228,5 @@ const addItemsBtn = document.getElementById("addItems");
 
 // Agregar un controlador de eventos al botón
 addItemsBtn.addEventListener("click", async function () {
-    await addItems();
+    addItems();
 });
