@@ -1,49 +1,114 @@
 let list = [];
 
-function keepAsking () {
-    let answer = "";
-    do {
-        answer = prompt("¿Desea seguir agregando productos? Ingrese 'si' o 'no':");
-        answer = answer != null ? answer.trim().toLowerCase() : ""; // Convierte a minúsculas y elimina espacios en blanco
+loadListFromLocalStorage();
+showList();
+calculateReceipt();
 
-        if (answer !== "si" && answer !== "no") {
-            alert("Por favor, ingrese 'si' o 'no'.");
+function keepAsking() {
+    return new Promise((resolve) => {
+        function askUser() {
+            Swal.fire({
+                title: "¿Desea seguir agregando productos?",
+                showDenyButton: true,
+                confirmButtonText: "Sí",
+                denyButtonText: "No",
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    resolve("si");
+                } else if (result.isDenied) {
+                    resolve("no");
+                } else {
+                    askUser(); // Preguntar nuevamente si no se selecciona Sí ni No
+                }
+            });
         }
-    } while (answer !== "si" && answer !== "no");
 
-    return answer;
+        askUser(); // Comenzar el proceso preguntando al usuario
+    });
 }
 
 function addItems() {
     let answer = "si"; // Inicializa la respuesta para que el bucle se ejecute al menos una vez
 
-    while (answer.toLowerCase() === "si") {
-        let product = prompt("Ingrese el nombre del producto:");
-        product = product ? product.trim() : "";
+    async function askProductName() {
+        while (answer.toLowerCase() === "si") {
+            const result = await Swal.fire({
+                title: "Ingrese el nombre del producto:",
+                input: "text",
+                showCancelButton: true,
+                confirmButtonText: "Aceptar",
+                cancelButtonText: "Cancelar",
+                inputValidator: (value) => {
+                    return value.trim() === "" ? "El nombre del producto no es válido. Por favor, inténtelo de nuevo." : null;
+                },
+            });
 
-        while (product === "") {
-            alert("El nombre del producto no es válido. Por favor, inténtelo de nuevo.");
-            product = prompt("Ingrese el nombre del producto:");
-            product = product ? product.trim() : "";
+            if (result.isConfirmed) {
+                let product = result.value.trim();
+                await askQuantity(product);
+            } else {
+                break; // Salir del bucle si el usuario cancela
+            }
         }
-
-        let quantity = parseInt(prompt("Ingrese la cantidad del producto:"));
-        while (isNaN(quantity) || quantity <= 0) {
-            alert("La cantidad ingresada no es válida. Por favor, ingrese un número mayor que cero.");
-            quantity = parseInt(prompt("Ingrese la cantidad del producto:"));
-        }
-
-        let price = parseFloat(prompt("Ingrese el precio unitario del producto:"));
-        while (isNaN(price) || price <= 0) {
-            alert("El precio ingresado no es válido. Por favor, ingrese un número mayor que cero.");
-            price = parseFloat(prompt("Ingrese el precio del producto:"));
-        }
-
-        // Agregar el objeto a la lista
-        list.push({ product, quantity, price });
-
-        answer = keepAsking();
     }
+
+    async function askQuantity(product) {
+        const result = await Swal.fire({
+            title: "Ingrese la cantidad del producto:",
+            input: "number",
+            inputAttributes: {
+                min: 1,
+                step: 1,
+            },
+            showCancelButton: true,
+            confirmButtonText: "Aceptar",
+            cancelButtonText: "Cancelar",
+            inputValidator: (value) => {
+                return isNaN(value) || parseInt(value) <= 0 ? "La cantidad ingresada no es válida. Por favor, ingrese un número mayor que cero." : null;
+            },
+        });
+
+        if (result.isConfirmed) {
+            let quantity = parseInt(result.value);
+            await askPrice(product, quantity);
+        }
+    }
+
+    async function askPrice(product, quantity) {
+        const result = await Swal.fire({
+            title: "Ingrese el precio unitario del producto:",
+            input: "number",
+            inputAttributes: {
+                min: 0.01,
+                step: 0.01,
+            },
+            showCancelButton: true,
+            confirmButtonText: "Aceptar",
+            cancelButtonText: "Cancelar",
+            inputValidator: (value) => {
+                return isNaN(value) || parseFloat(value) <= 0 ? "El precio ingresado no es válido. Por favor, ingrese un número mayor que cero." : null;
+            },
+        });
+
+        if (result.isConfirmed) {
+            let price = parseFloat(result.value);
+            // Agregar el objeto a la lista
+            list.push({ product, quantity, price });
+
+            answer = await keepAsking();
+
+            if (answer.toLowerCase() === "si") {
+                askProductName(); // Preguntar por el próximo producto
+            } else {
+                showList(); // Mostrar la lista actualizada después de agregar productos
+                calculateReceipt(); // Luego de agregar items, muestra la lista actualizada y genera el recibo
+                saveListToLocalStorage(); // Guarda la lista en localStorage al final de la operación
+            }
+        }
+    }
+
+    
+    askProductName(); // Comenzar el proceso preguntando por el nombre del producto
 }
 
 function showList() {
@@ -103,12 +168,27 @@ function calculateReceipt() {
     receipt.appendChild(receiptDiv);
 }
 
+// Función para guardar la lista en localStorage
+function saveListToLocalStorage() {
+    // Convierte la lista a formato JSON y guárdala en localStorage
+    localStorage.setItem('productList', JSON.stringify(list));
+}
+
+// Función para cargar la lista desde localStorage
+function loadListFromLocalStorage() {
+    // Obtiene la lista en formato JSON desde localStorage
+    const savedListJSON = localStorage.getItem('productList');
+
+    // Si hay una lista almacenada, conviértela de JSON a objeto y asígnala a la variable list
+    if (savedListJSON) {
+        list = JSON.parse(savedListJSON);
+    }
+}
+
 // Obtener el botón por su ID
 const addItemsBtn = document.getElementById("addItems");
 
 // Agregar un controlador de eventos al botón
-addItemsBtn.addEventListener("click", function() {
-    addItems();
-    showList();
-    calculateReceipt(); // Luego de agregar items, muestra la lista actualizada y genera el recibo
+addItemsBtn.addEventListener("click", async function () {
+    await addItems();
 });
