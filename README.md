@@ -1,2 +1,2 @@
-# Lista de compras - PreEntrega2-Araya🛒
+# Lista de compras - Sebastian Araya🛒
 ## Entregas para curso de coderhouse/javascript 💻

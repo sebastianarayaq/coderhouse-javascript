@@ -3,7 +3,6 @@ let list = [];
 loadListFromLocalStorage();
 showList();
 calculateReceipt();
-clearList();
 
 function keepAsking() {
     return new Promise((resolve) => {
@@ -29,7 +28,7 @@ function keepAsking() {
     });
 }
 
-function addItems() {
+async function addItems() {
     let answer = "si"; // Inicializa la respuesta para que el bucle se ejecute al menos una vez
 
     async function askProductName() {
@@ -99,9 +98,9 @@ function addItems() {
                 if (!value) {
                     return "Por favor, ingrese un valor.";
                 }
-                const intValue = parseInt(value);
-                if (isNaN(intValue) || intValue <= 0 || intValue !== parseFloat(value)) {
-                    return "La cantidad ingresada no es un número entero válido. Por favor, ingrese un número entero mayor que cero.";
+                const floatValue = parseFloat(value);
+                if (isNaN(floatValue) || floatValue <= 0) {
+                    return "El precio ingresado no es válido. Por favor, ingrese un número mayor que cero.";
                 }
 
                 return null;
@@ -121,10 +120,11 @@ function addItems() {
                 showList(); // Mostrar la lista actualizada después de agregar productos
                 calculateReceipt(); // Luego de agregar items, muestra la lista actualizada y genera el recibo
                 saveListToLocalStorage(); // Guarda la lista en localStorage al final de la operación
-                clearList();
+                const dolarValue = await getDolarValue();
             }
         }
     }
+
     askProductName(); // Comenzar el proceso preguntando por el nombre del producto
 }
 
@@ -155,24 +155,26 @@ function showList() {
     }
 }
 
-function clearList() {
+function clearList(dolarValue) {
     if (list.length > 0) {
         const clearButton = document.createElement('button');
         clearButton.textContent = 'Limpiar carro';
         clearButton.classList.add('btn', 'btn-danger');
 
-        // Agrega el botón al contenedor
+        // Agrega el botón al contenedor si el contenedor existe
         const container = document.querySelector('.row.text-center.d-flex.justify-content-between.pt-3');
-        container.appendChild(clearButton);
+        if (container) {
+            container.appendChild(clearButton);
 
-        // Evento de click para limpiar la lista
-        clearButton.addEventListener('click', function () {
-            list = [];
-            showList(); // Actualizar la interfaz después de limpiar la lista
-            saveListToLocalStorage(); // Guardar la lista actualizada en localStorage
-            calculateReceipt(); // Calcula nuevamente el recibo para actualizar la info
-            container.removeChild(clearButton); // Elimina el botón después de hacer click
-        });
+            // Evento de click para limpiar la lista
+            clearButton.addEventListener('click', function () {
+                list = [];
+                showList(); // Actualizar la interfaz después de limpiar la lista
+                saveListToLocalStorage(); // Guardar la lista actualizada en localStorage
+                calculateReceipt(dolarValue); // Calcula nuevamente el recibo para actualizar la info
+                container.removeChild(clearButton); // Elimina el botón después de hacer click
+            });
+        }
     }
 }
 
@@ -184,26 +186,42 @@ function calculateReceipt() {
     receipt.innerHTML = "";
 
     //Variable para almacenar el total de la compra y total de productos
-    let totalValue = 0
-    let totalProducts = 0
+    let totalValue = 0;
+    let totalProducts = 0;
+
     // Iterar a través de los productos y crear elementos div para cada uno
     for (let i = 0; i < list.length; i++) {
-        totalValue+=list[i].price*list[i].quantity
-        totalProducts+=list[i].quantity
+        totalValue += list[i].price * list[i].quantity;
+        totalProducts += list[i].quantity;
     }
 
-    // Crear un elemento div con estilos de Bootstrap para cada producto
-    const receiptDiv = document.createElement("div");
-    receiptDiv.classList.add("row", "text-center", "d-flex", "justify-content-between", "pt-3");
+    getDolarValue().then(dolarValue => {
+        if (dolarValue !== null) {
+            // Crear un elemento div con estilos de Bootstrap para el recibo
+            const receiptDiv = document.createElement("div");
+            receiptDiv.classList.add("row", "text-center", "d-flex", "justify-content-between", "pt-3");
 
-    // Agregar información del producto al div
-    receiptDiv.innerHTML = `
-        <div class="col text-center"><p>Total de su compra:</p>     <p class="text-break">$${totalValue}</p></div>
-        <div class="col text-center"><p>Cantidad de productos:</p>  <p class="text-break">${totalProducts}</p></div>
-    `;
+            // Agregar información del recibo al div
+            receiptDiv.innerHTML = `
+                <div class="col text-center"><p>Total de su compra:</p>     <p class="text-break">$${totalValue}</p></div>
+                <div class="col text-center"><p>Cantidad de productos:</p>  <p class="text-break">${totalProducts}</p></div>
+                <div class="col text-center"><p>Total en Dolares:</p>  <p class="text-break">$${(totalValue / dolarValue).toFixed(2)}</p></div>
+            `;
 
-    // Agregar el elemento div del producto al contenedor
-    receipt.appendChild(receiptDiv);
+            // Agregar el elemento div del recibo al contenedor
+            receipt.appendChild(receiptDiv);
+        }
+    clearList();
+    });
+}
+
+async function getDolarValue() {
+    return fetch('https://mindicador.cl/api')
+        .then(response => response.json())
+        .then(data => data.dolar.valor)
+        .catch(error => {
+            console.log('Request failed', error);
+        });
 }
 
 // Función para guardar la lista en localStorage
@@ -228,5 +246,5 @@ const addItemsBtn = document.getElementById("addItems");
 
 // Agregar un controlador de eventos al botón
 addItemsBtn.addEventListener("click", async function () {
-    addItems();
+    await addItems();
 });
